@@ -287,7 +287,7 @@ class TodoListApp(ctk.CTk):
         ctk.set_appearance_mode(new_mode)
 
     def show_todo_detail(self, index: int):
-        """显示待办事项详情弹窗"""
+        """显示待办事项详情弹窗，支持编辑和保存"""
         if index >= len(self.todos):
             return
 
@@ -296,7 +296,7 @@ class TodoListApp(ctk.CTk):
         # 创建弹窗
         detail_window = ctk.CTkToplevel(self)
         detail_window.title("待办事项详情")
-        detail_window.geometry("400x300")
+        detail_window.geometry("400x350")
         detail_window.resizable(False, False)
 
         # 使弹窗居中显示
@@ -321,13 +321,13 @@ class TodoListApp(ctk.CTk):
         # 内容标题
         content_title = ctk.CTkLabel(
             main_frame,
-            text="内容：",
+            text="内容（可编辑）：",
             font=ctk.CTkFont(size=12),
             text_color="#5f6368"
         )
         content_title.pack(anchor="w", pady=(10, 5))
 
-        # 内容文本框（可查看完整内容）
+        # 内容文本框（可编辑）
         content_textbox = ctk.CTkTextbox(
             main_frame,
             height=120,
@@ -338,7 +338,6 @@ class TodoListApp(ctk.CTk):
         )
         content_textbox.pack(fill="x", pady=(0, 15))
         content_textbox.insert("1.0", todo.text)
-        content_textbox.configure(state="disabled")  # 设为只读
 
         # 创建时间
         time_label = ctk.CTkLabel(
@@ -349,19 +348,46 @@ class TodoListApp(ctk.CTk):
         )
         time_label.pack(anchor="w", pady=(0, 20))
 
+        # 按钮容器
+        button_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        button_frame.pack(fill="x")
+
+        def save_changes():
+            """保存修改"""
+            new_text = content_textbox.get("1.0", "end-1c").strip()
+            if new_text:
+                self.todos[index].text = new_text
+                self.save_todos()
+                self.refresh_todos()
+                detail_window.destroy()
+
+        # 保存按钮
+        save_button = ctk.CTkButton(
+            button_frame,
+            text="保存修改",
+            command=save_changes,
+            height=35,
+            width=100,
+            font=ctk.CTkFont(size=14),
+            corner_radius=8,
+            fg_color="#34a853",
+            hover_color="#2d8a47"
+        )
+        save_button.pack(side="left", padx=(0, 10))
+
         # 关闭按钮
         close_button = ctk.CTkButton(
-            main_frame,
+            button_frame,
             text="关闭",
             command=detail_window.destroy,
             height=35,
             width=100,
             font=ctk.CTkFont(size=14),
             corner_radius=8,
-            fg_color="#1a73e8",
-            hover_color="#1557b0"
+            fg_color="#5f6368",
+            hover_color="#3c4043"
         )
-        close_button.pack()
+        close_button.pack(side="left")
 
     def save_todos(self):
         """保存待办事项到文件"""

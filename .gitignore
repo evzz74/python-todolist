@@ -23,3 +23,6 @@ todos.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 编译文件
+TodoList.exe
