@@ -202,9 +202,13 @@ class TodoListApp(ctk.CTk):
             text=todo.text,
             font=ctk.CTkFont(size=14, overstrike=font_overstrike),
             text_color=text_color,
-            anchor="w"
+            anchor="w",
+            cursor="hand2"  # 鼠标悬停时显示手型光标
         )
         text_label.pack(side="left", fill="x", expand=True, padx=(0, 10), pady=15)
+
+        # 为文本标签绑定点击事件，点击后显示详情
+        text_label.bind("<Button-1>", lambda e, idx=index: self.show_todo_detail(idx))
 
         # 删除按钮
         delete_button = ctk.CTkButton(
@@ -281,6 +285,83 @@ class TodoListApp(ctk.CTk):
         current_mode = ctk.get_appearance_mode()
         new_mode = "dark" if current_mode == "Light" else "light"
         ctk.set_appearance_mode(new_mode)
+
+    def show_todo_detail(self, index: int):
+        """显示待办事项详情弹窗"""
+        if index >= len(self.todos):
+            return
+
+        todo = self.todos[index]
+
+        # 创建弹窗
+        detail_window = ctk.CTkToplevel(self)
+        detail_window.title("待办事项详情")
+        detail_window.geometry("400x300")
+        detail_window.resizable(False, False)
+
+        # 使弹窗居中显示
+        detail_window.transient(self)
+        detail_window.grab_set()
+
+        # 主容器
+        main_frame = ctk.CTkFrame(detail_window, fg_color="transparent")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # 状态标签
+        status_text = "✓ 已完成" if todo.completed else "○ 未完成"
+        status_color = "#34a853" if todo.completed else "#ea4335"
+        status_label = ctk.CTkLabel(
+            main_frame,
+            text=status_text,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            text_color=status_color
+        )
+        status_label.pack(anchor="w", pady=(0, 10))
+
+        # 内容标题
+        content_title = ctk.CTkLabel(
+            main_frame,
+            text="内容：",
+            font=ctk.CTkFont(size=12),
+            text_color="#5f6368"
+        )
+        content_title.pack(anchor="w", pady=(10, 5))
+
+        # 内容文本框（可查看完整内容）
+        content_textbox = ctk.CTkTextbox(
+            main_frame,
+            height=120,
+            font=ctk.CTkFont(size=14),
+            corner_radius=8,
+            border_width=1,
+            border_color="#e8eaed"
+        )
+        content_textbox.pack(fill="x", pady=(0, 15))
+        content_textbox.insert("1.0", todo.text)
+        content_textbox.configure(state="disabled")  # 设为只读
+
+        # 创建时间
+        time_label = ctk.CTkLabel(
+            main_frame,
+            text=f"创建时间：{todo.created_at}",
+            font=ctk.CTkFont(size=12),
+            text_color="#5f6368"
+        )
+        time_label.pack(anchor="w", pady=(0, 20))
+
+        # 关闭按钮
+        close_button = ctk.CTkButton(
+            main_frame,
+            text="关闭",
+            command=detail_window.destroy,
+            height=35,
+            width=100,
+            font=ctk.CTkFont(size=14),
+            corner_radius=8,
+            fg_color="#1a73e8",
+            hover_color="#1557b0"
+        )
+        close_button.pack()
 
     def save_todos(self):
         """保存待办事项到文件"""
